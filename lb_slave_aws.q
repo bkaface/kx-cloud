@@ -32,5 +32,5 @@ neg[h] (`.lb.register;instanceName)
 
 \d . ;
 
-value"l /hdb/db"
+system"l /hdb/db"
 
