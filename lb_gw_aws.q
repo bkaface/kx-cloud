@@ -32,7 +32,6 @@ init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1e
 	settings: default^ $[count .z.x;("J"$ .Q.opt .z.x)[;0];()!()];		/updating settings with cmd line args
 	@[`.lb;key[settings];:;value[settings]]; 	/set values in namespace from parameters
 	//start dynamic loadbalancing if required
-	0N!"Dynamic - ",string[dynamic];
 	.z.ts::?[`boolean$dynamic;
 		[{assessLoad[];assessSlaves[];}];
 		[{assessSlaves[];}]
