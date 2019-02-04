@@ -34,8 +34,9 @@ init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1e
 	//start dynamic loadbalancing if required
 	?[dynamic;
 		[system"t ",string assessFreq;
-		.z.ts: {assessLoad[];assessSlaves[];}]
-		.z.ts:assessSlaves];
+		.z.ts: {assessLoad[];assessSlaves[];}];
+		[system"t ",string assessFreq;
+		.z.ts:assessSlaves]];
  };
 
 //starting and stopping processes 
