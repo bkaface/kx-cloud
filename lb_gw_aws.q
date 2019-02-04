@@ -60,6 +60,7 @@ stopInst:{[instName] unregister[instMap[instName]];
 			system[x];
 		};
 unregister:{[handle] instName:instMap?handle;
+			stopInst[instName];
 			runningInst:: distinct runningInst except instName;
 			availInst,:instName;
 			track:: enlist[handle] _ track;
@@ -95,7 +96,8 @@ assessLoad:{queue: (count') track;
 			count[track]< bInsts;
 				[0N! "Increasing the base number of Instances as not at base level";
 				startMultInst[bInsts - count track]];						/removing the slaveHandles that are unused and not 
-			]};
+			];
+			system "s ",string neg count track;};
 checkBase:{if[count[track]< bInsts;startMultInst[bInsts - count[track]]]};
 //end code for responsive slave scaling
 
