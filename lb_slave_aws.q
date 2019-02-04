@@ -3,7 +3,7 @@
 //Called with syntax as follows:
 //q lb_slave.q -masterPort 2330 -masterHost 
 
-\d .lb;
+\d .lb
 instanceName: system "ec2metadata --instance-id"; 							/whatever command I need to run to get the instance name on the env
 shutDownCmd: "aws ec2 stop-instances --instance-ids ",instanceName;			/whatever aws command will shut down this instance from within
 d: .Q.opt .z.x;
