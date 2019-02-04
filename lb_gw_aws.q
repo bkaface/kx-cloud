@@ -43,7 +43,7 @@ startMultInst:{[numInst] instances:getNxtInstances[numInst];
 			startInst each instances;
 		};
 startInst:{[instName] x:spawnCmd,string instName;0N! x; 
-			value[x]
+			system[x];
 		};
 getNxtInstances:{[numInst] numInst sublist availInst}
 register:{[instName] .rk.x:instName;runningInst,:instName;
@@ -57,7 +57,7 @@ stopMultInst:{[numInst] instances:neg[numInst] sublist bInsts _ runningInst;
 		};
 stopInst:{[instName] unregister[instMap[instName]];
 			x:stopCmd,string instName;0N! x; 
-			value[x]
+			system[x];
 		};
 unregister:{[handle] instName:instMap?handle;
 			runningInst:: distinct runningInst except instName;
