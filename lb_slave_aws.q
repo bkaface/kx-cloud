@@ -7,7 +7,7 @@
 instanceName: system "ec2metadata --instance-id"; 							/whatever command I need to run to get the instance name on the env
 shutDownCmd: "aws ec2 stop-instances --instance-ids ",instanceName;			/whatever aws command will shut down this instance from within
 d: .Q.opt .z.x;
-instanceName: instanceName^`$raze d[`instanceName];
+instanceName: (`$instanceName)^`$raze d[`instanceName];
 /errorDict: ((),1)!enlist("Conn Refused:Slave Connections exceeding configured slave settings on Master")
 
 if[not `masterPort in key d;
@@ -26,7 +26,7 @@ if[not `masterHost in key d;
 h: hopen hsym `$":" sv raze d[`masterHost`masterPort];
 
 //register with the remote process
-neg[h] (`.lb.register;`$instanceName)
+neg[h] (`.lb.register;instanceName)
 
 //potentially add some stuff here on refused connection etc.
 
