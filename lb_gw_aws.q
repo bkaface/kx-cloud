@@ -32,9 +32,10 @@ init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1e
 	settings: default^ $[count .z.x;("J"$ .Q.opt .z.x)[;0];()!()];		/updating settings with cmd line args
 	@[`.lb;key[settings];:;value[settings]]; 	/set values in namespace from parameters
 	//start dynamic loadbalancing if required
-	if[dynamic;
+	$[dynamic;
 		[system"t ",string assessFreq;
-		.z.ts: assessLoad]]; 
+		.z.ts: {assessLoad[];assessSlaves[];}]
+		.z.ts:assessSlaves];
  };
 
 //starting and stopping processes 
@@ -64,7 +65,7 @@ unregister:{[handle] instName:instMap?handle;
 			availInst,:instName;
 			track:: enlist[handle] _ track;
 			instMap:: enlist[instMap?handle] _ instMap;
-			hclose[handle];
+			@[hclose;handle; {[x;handle]0N! "Handle ",string[handle]," closed from remote server"}[;handle]];
 		};
 
 //loadbalancing	 code:
@@ -95,8 +96,10 @@ assessLoad:{queue: (count') track;
 			count[track]< bInsts;
 				[0N! "Increasing the base number of Instances as not at base level";
 				startMultInst[bInsts - count track]];						/removing the slaveHandles that are unused and not 
-			];
-			system "s ",string neg count track;};
+			]
+		};
+assessSlaves:{system "s ",string neg count track;}
+
 checkBase:{if[count[track]< bInsts;startMultInst[bInsts - count[track]]]};
 //end code for responsive slave scaling
 
