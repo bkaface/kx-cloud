@@ -14,11 +14,12 @@
 /bInsts:2;							/number of instances to keep running as the basic setup. Won't go below this.
 
 \d .lb
+
 /maxFlex:system["s"]; 				/the maximum number of slaves available for scaling
-init:{availInst:: `$("instance1";"instance2";"instance3";"instance4");
+init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1ecad40");
 	runningInst::();
-	spawnCmd:: "spawn ";
-	stopCmd:: "stop ";
+	spawnCmd:: "aws ec2 start-instances --instance-id ";
+	stopCmd:: "aws ec2 stop-instances --instance-ids ";
 	track::()!();						/tracking queries with process thread
 	instMap::()!();
 	/processing command line parameters
