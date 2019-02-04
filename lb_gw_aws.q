@@ -52,7 +52,7 @@ register:{[instName] .rk.x:instName;runningInst,:instName;
 			instMap[instName]:.z.w;
 			track::@[track;.z.w;:;()];				
 		};
-stopMultInst:{[numInst] instances:neg[numInst] sublist bInsts _ runningInst;
+stopMultInst:{[numInst] /instances:neg[numInst] sublist bInsts _ runningInst;
 			stopInst each instance;
 		};
 stopInst:{[instName] unregister[instMap[instName]];
@@ -60,7 +60,6 @@ stopInst:{[instName] unregister[instMap[instName]];
 			system[x];
 		};
 unregister:{[handle] instName:instMap?handle;
-			stopInst[instName];
 			runningInst:: distinct runningInst except instName;
 			availInst,:instName;
 			track:: enlist[handle] _ track;
@@ -92,7 +91,7 @@ assessLoad:{queue: (count') track;
 				startMultInst[instInc]];						/spawn the new slaves as per the incremental increase specified 
 			any c:0= bInsts _ queue;						/check if any slaves not being used, and more than the base Slaves running
 				[0N!"Reducing available Instances";
-				stopInst[where c]];
+				stopMultInst[where c]];
 			count[track]< bInsts;
 				[0N! "Increasing the base number of Instances as not at base level";
 				startMultInst[bInsts - count track]];						/removing the slaveHandles that are unused and not 
