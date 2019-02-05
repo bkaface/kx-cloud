@@ -23,7 +23,7 @@ if[not `masterHost in key d;
 /		};
 
 /on the servers 
-h: hopen hsym `$":" sv raze d[`masterHost`masterPort];
+h: @[hopen;hsym `$":" sv raze d[`masterHost`masterPort]; {0N! "Master node not running, exiting"; system"\\"}]
 
 //register with the remote process
 neg[h] (`.lb.register;instanceName)
