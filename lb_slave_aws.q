@@ -18,9 +18,9 @@ if[not `masterHost in key d;
 	 system"\\"];
 
 /when connection closed
-.z.pc:{[h]0N! shutDownCmd; 
-		system[shutDownCmd]
-		};
+/.z.pc:{[h]0N! shutDownCmd; 
+/		system[shutDownCmd]
+/		};
 
 /on the servers 
 h: hopen hsym `$":" sv raze d[`masterHost`masterPort];
