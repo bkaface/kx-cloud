@@ -124,5 +124,7 @@ checkBase:{if[count[track]< bInsts;startMultInst[bInsts - count[track]]]};
 /startMultInst[bInsts]
 \d .
 
+system"l /hdb/db"
+
 //can do some funny things with the xinted stuff for this...
 //
