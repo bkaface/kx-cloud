@@ -22,10 +22,10 @@ init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1e
 	stopCmd:: "aws ec2 stop-instances --instance-ids ";
 	track::()!();						/tracking queries with process thread
 	instMap::()!();
-	currentInst: raze system "ec2metadata --instance-id";
+	currentInst::`$raze system "ec2metadata --instance-id";
 	/processing command line parameters
 	default: (!) . flip ((`bInsts;2);				/base instances to run
-						(`assessFreq;10000);		/how often to assess throughput 
+						(`assessFreq;50000);		/how often to assess throughput 
 						(`waitQryThreshT;100);		/wait time threshold
 						(`instInc;1);				/how many new instances to start when limit threatened
 						(`dynamic;1);				/whether to run in dynamic spin up mode, or just in responsive 
@@ -51,7 +51,7 @@ startInst:{[instName] x:spawnCmd,string instName;0N! x;
 getNxtInstances:{[numInst] numInst sublist availInst}
 register:{[instName] .rk.x:instName;runningInst,:instName;
 			availInst:: distinct availInst except instName;
-			runningInst,:instName;
+			runningInst:: distinct runningInst,instName;
 			instMap[instName]:.z.w;
 			track::@[track;.z.w;:;()];				
 		};
