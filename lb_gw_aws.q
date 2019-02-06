@@ -22,6 +22,7 @@ init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1e
 	stopCmd:: "aws ec2 stop-instances --instance-ids ";
 	track::()!();						/tracking queries with process thread
 	instMap::()!();
+	currentInst: raze system "ec2metadata --instance-id";
 	/processing command line parameters
 	default: (!) . flip ((`bInsts;2);				/base instances to run
 						(`assessFreq;10000);		/how often to assess throughput 
@@ -58,8 +59,9 @@ stopMultInst:{[numInst] /instances:neg[numInst] sublist bInsts _ runningInst;
 			stopInst each instance;
 		};
 stopInst:{[instName] unregister[instMap[instName]];
-			x:stopCmd,string instName;0N! x; 
-			system[x];
+			if[instName<>currentInst;
+				[x:stopCmd,string instName;0N! x; 
+				system[x]]];
 		};
 unregister:{[handle] instName:instMap?handle;
 			runningInst:: distinct runningInst except instName;
