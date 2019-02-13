@@ -16,13 +16,13 @@
 \d .lb
 
 /maxFlex:system["s"]; 				/the maximum number of slaves available for scaling
-init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1ecad40");
+init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1ecad40"); 		/specific to Kx aws instances
 	runningInst::();
-	spawnCmd:: "aws ec2 start-instances --instance-id ";
-	stopCmd:: "aws ec2 stop-instances --instance-ids ";
-	track::()!();						/tracking queries with process thread
-	instMap::()!();
-	currentInst::`$raze system "ec2metadata --instance-id";
+	spawnCmd:: "aws ec2 start-instances --instance-id ";		/start AWS instance
+	stopCmd:: "aws ec2 stop-instances --instance-ids ";			/stop AWS intance 
+	track::()!();												/tracking queries with process thread
+	instMap::()!();												/keeping map of the instances to conn. handles
+	currentInst::`$raze system "ec2metadata --instance-id";		/get the currentinstance name
 	/processing command line parameters
 	default: (!) . flip ((`bInsts;2);				/base instances to run
 						(`assessFreq;50000);		/how often to assess throughput 
@@ -31,79 +31,83 @@ init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1e
 						(`dynamic;1);				/whether to run in dynamic spin up mode, or just in responsive 
 						(`avgQryExT;51));			/average query execution time
 	settings: default^ $[count .z.x;("J"$ .Q.opt .z.x)[;0];()!()];		/updating settings with cmd line args
-	@[`.lb;key[settings];:;value[settings]]; 	/set values in namespace from parameters
-	//start dynamic loadbalancing if required
-	.z.ts::?[`boolean$dynamic;
-		[{assessLoad[];assessSlaves[];}];
-		[{assessSlaves[];}]
+	@[`.lb;key[settings];:;value[settings]]; 		/set values in namespace from parameters
+	/start dynamic loadbalancing if required
+	.z.ts::?[`boolean$dynamic;						/check if dynamic
+		[{assessLoad[];assessSlaves[];}];			/if dynamic, assess query load and balance as needed and update slaves based upon connections
+		[{assessSlaves[];}]							/else just update slaves 
 	];
-	system"t ",string assessFreq;
+	system"t ",string assessFreq;					/setting timer to assesment Frequency
  };
 
 //starting and stopping processes 
-/start new processes 
-startMultInst:{[numInst] instances:getNxtInstances[numInst];
+/starting instances 
+startMultInst:{[numInst] instances:getNxtInstances[numInst];	/Command to start a specified number of instances
 			startInst each instances;
 		};
-startInst:{[instName] x:spawnCmd,string instName;0N! x; 
+startInst:{[instName] x:spawnCmd,string instName;0N! x; 		/Command to start a specific instance
 			system[x];
 		};
-getNxtInstances:{[numInst] numInst sublist availInst}
-register:{[instName] .rk.x:instName;runningInst,:instName;
-			availInst:: distinct availInst except instName;
-			runningInst:: distinct runningInst,instName;
-			instMap[instName]:.z.w;
-			track::@[track;.z.w;:;()];				
-		};
-stopMultInst:{[instHandles] instances:instMap?instHandles;
+getNxtInstances:{[numInst] numInst sublist availInst}			/Show us the next instance to start
+
+/stopping instances 
+stopMultInst:{[instHandles] instances:instMap?instHandles;		/get instance handles
 			stopInst each instances;
 		};
 stopInst:{[instName] unregister[instMap[instName]];
-			if[instName<>currentInst;
-				[x:stopCmd,string instName;0N! x; 
+			if[instName<>currentInst;							/only stopping if running on other instance to GW proc
+				[x:stopCmd,string instName;0N! x; 				/running awscli command to stop
 				system[x]]];
 		};
-unregister:{[handle] instName:instMap?handle;
-			runningInst:: distinct runningInst except instName;
-			availInst,:instName;
-			track:: enlist[handle] _ track;
-			instMap:: enlist[instMap?handle] _ instMap;
+//end code for starting and stopping slaves
+
+//registering and unregistering remote processes
+/called by registering instances 
+register:{[instName] 0N! "Establishing connection from instance - ",string instName;
+			availInst:: distinct availInst except instName;		/update list of available Instances
+			runningInst:: distinct runningInst,instName;		/add to running instances
+			instMap[instName]:.z.w;								/map instance to handle
+			track::@[track;.z.w;:;()];							/update tracking dict
+		};
+/called on handle close
+unregister:{[handle] instName:instMap?handle;					/get instance name from handle
+			runningInst:: distinct runningInst except instName;	/remove from running instance list
+			availInst,:instName;								/return to available instance list 
+			track:: enlist[handle] _ track;						/remove from tracking dict
+			instMap:: enlist[instMap?handle] _ instMap;			/update instance mapping
 			@[hclose;handle; {[x;handle]0N! "Handle ",string[handle]," closed from remote server"}[;handle]];
 		};
+//end code for registering and unregistering remote processes
 
-//loadbalancing	 code:
+//loadbalancing code
 getMostFreeHandle:{free?min free:(count')track};	/return handle with least queued queries
-//end code for starting and stopping slaves
 			
-//Code for query distribution
 /called on remote slave processes
-processQuery:{[queryHandle;query] 
-				neg[.z.w] (`.lb.callback;queryHandle;@[(0b;)value@;query;{[err] (1b;err)}]);
-				neg[.z.w] (::) /return the executed query to Master, indicating if errored, flush
+processQuery:{[clientHandle;query] 
+				neg[.z.w] (`.lb.callback;clientHandle;@[(0b;)value@;query;{[err] (1b;err)}]);	/execute the query or capture error and callback
+				neg[.z.w] (::) 									/return the executed query to Master, indicating if errored, flush
 			};
 /called on return from slave processes
 callback:{[clientHandle;result]
 			-30! clientHandle,result;						/send the received result back to the calling query Process
 			track[.z.w]: track[.z.w] except clientHandle; 	/clearing this query from tracker
 		};
-//end code for query dist.
+//end code for loadbalancing
 
 //Code for responsive slave scaling
 assessLoad:{queue: (count') track;
 			$[any waitQryThreshT < avgQryExT*queue; 		/are we in danger of not meeting threshold query return times?
 				[0N!"Increasing available Instances";
-				startMultInst[instInc]];						/spawn the new slaves as per the incremental increase specified 
+				startMultInst[instInc]];					/spawn the new slaves as per the incremental increase specified 
 			any c:0= bInsts _ queue;						/check if any slaves not being used, and more than the base Slaves running
 				[0N!"Reducing available Instances";
 				stopMultInst[where c]];
-			count[track]< bInsts;
+			count[track]< bInsts;							/if not running at base level
 				[0N! "Increasing the base number of Instances as not at base level";
-				startMultInst[bInsts - count track]];						/removing the slaveHandles that are unused and not 
+				startMultInst[bInsts - count track]];		/removing the slaveHandles that are unused and not 
 			]
 		};
-assessSlaves:{system "s ",string neg count track;}
-
-checkBase:{if[count[track]< bInsts;startMultInst[bInsts - count[track]]]};
+assessSlaves:{system "s ",string neg count track;}			/updating slave threads based on process connections
 //end code for responsive slave scaling
 
 //set up .z handlers 
@@ -119,12 +123,11 @@ checkBase:{if[count[track]< bInsts;startMultInst[bInsts - count[track]]]};
 	};
 //end .z handlers
 
-
-
 /startMultInst[bInsts]
 \d .
 
+//for aws demo - loading mounts 
 system"l /hdb/db"
 
-//can do some funny things with the xinted stuff for this...
+//can also do some funny things with the xinted stuff too ... tbc
 //
