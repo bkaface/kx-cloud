@@ -16,7 +16,7 @@
 \d .lb
 
 /maxFlex:system["s"]; 				/the maximum number of slaves available for scaling
-init:{availInst:: `$("i-0bd707cc93f3ccd68";"i-06e47cd87b66c9ad5";"i-098b32ca1d1ecad40"); 		/specific to Kx aws instances
+init:{availInst:: `$"," vs getenv `slave_IDs; 		/per envvar specified specific to Kx aws instances
 	runningInst::();
 	spawnCmd:: "aws ec2 start-instances --instance-id ";		/start AWS instance
 	stopCmd:: "aws ec2 stop-instances --instance-ids ";			/stop AWS intance 
