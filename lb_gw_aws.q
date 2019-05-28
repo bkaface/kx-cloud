@@ -18,11 +18,10 @@
 /maxFlex:system["s"]; 				/the maximum number of slaves available for scaling
 init:{availInst:: `$"," vs getenv `slave_IDs; 		/per envvar specified specific to Kx aws instances
 	runningInst::();
-	spawnCmd:: "aws ec2 start-instances --instance-id ";		/start AWS instance
-	stopCmd:: "aws ec2 stop-instances --instance-ids ";			/stop AWS intance 
+	/spawnCmd:: "aws ec2 start-instances --instance-id ";		/start AWS instance
+	/stopCmd:: "aws ec2 stop-instances --instance-ids ";			/stop AWS intance 
 	track::()!();												/tracking queries with process thread
 	instMap::()!();												/keeping map of the instances to conn. handles
-	currentInst::`$raze system "ec2metadata --instance-id";		/get the currentinstance name
 	/processing command line parameters
 	default: (!) . flip ((`bInsts;2);				/base instances to run
 						(`assessFreq;50000);		/how often to assess throughput 
@@ -31,6 +30,8 @@ init:{availInst:: `$"," vs getenv `slave_IDs; 		/per envvar specified specific t
 						(`dynamic;1);				/whether to run in dynamic spin up mode, or just in responsive 
 						(`avgQryExT;51));			/average query execution time
 	settings: default^ $[count .z.x;("J"$ .Q.opt .z.x)[;0];()!()];		/updating settings with cmd line args
+	getCmds[getenv `platform;`.lb];					/get the appropriate commands for start stop instances
+	currentInst::parseInst getInstCmd;				/get the currentinstance name
 	@[`.lb;key[settings];:;value[settings]]; 		/set values in namespace from parameters
 	/start dynamic loadbalancing if required
 	.z.ts::?[`boolean$dynamic;						/check if dynamic
@@ -39,6 +40,19 @@ init:{availInst:: `$"," vs getenv `slave_IDs; 		/per envvar specified specific t
 	];
 	system"t ",string assessFreq;					/setting timer to assesment Frequency
  };
+
+//getting the correct commands for any cloud instance 
+getCmds:{[platform;context]
+	cmdDict:`AWS`GCP!((!/) flip ((`spawnCmd;"aws ec2 start-instances --instance-id ");	/start AWS instance
+					(`stopCmd;"aws ec2 stop-instances --instance-ids ");				/stop AWS instance 
+					(`getInstCmd;"ec2metadata --instance-id");
+					(`parseInst;{`$raze system x}));						/get Instance Name
+		(!/) flip 	((`spawnCmd;"gcloud compute instances start ");						/start GCP Instance
+					(`stopCmd;"gcloud compute instances start ");						/stop GCP Instance
+					(`getInstCmd;"curl http://metadata.google.internal/computeMetadata/v1/instance/hostname -H Metadata-Flavor:Google");
+					(`parseInst;{`$first "." vs first system x})));
+	cmds:cmdDict[platform];
+	@[context;key[cmds];:;value[cmds]]};
 
 //starting and stopping processes 
 /starting instances 
