@@ -59,7 +59,7 @@ stopMultInst:{[instHandles] instances:instMap?instHandles;		/get instance handle
 		};
 stopInst:{[instName] unregister[instMap[instName]];
 			if[instName<>currentInst;							/only stopping if running on other instance to GW proc
-				[x:stopCmd,string[instName]," 2>&",getenv[`scripts_dir],"logs/cmd.out &";0N! x; 				/running awscli command to stop
+				[x:stopCmd,string[instName],">",getenv[`scripts_dir],"logs/cmd.out 2>&1 &";0N! x; 				/running awscli command to stop
 				system[x]]];
 		};
 //end code for starting and stopping slaves
