@@ -47,7 +47,8 @@ init:{availInst:: `$"," vs getenv `slave_IDs; 		/per envvar specified specific t
 startMultInst:{[numInst] instances:getNxtInstances[numInst];	/Command to start a specified number of instances
 			startInst each instances;
 		};
-startInst:{[instName] x:spawnCmd,string[instName]," 2>&",getenv[`scripts_dir],"logs/cmd.out &";0N! x; 		/Command to start a specific instance
+		/,getenv[`scripts_dir],"logs/cmd.out &"
+startInst:{[instName] x:spawnCmd,string[instName]," 2>&1 &";0N! x; 		/Command to start a specific instance
 			system[x];
 		};
 getNxtInstances:{[numInst] numInst sublist availInst}			/Show us the next instance to start
