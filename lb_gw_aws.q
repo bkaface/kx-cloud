@@ -47,7 +47,7 @@ init:{availInst:: `$"," vs getenv `slave_IDs; 		/per envvar specified specific t
 startMultInst:{[numInst] instances:getNxtInstances[numInst];	/Command to start a specified number of instances
 			startInst each instances;
 		};
-startInst:{[instName] x:spawnCmd,string instName;0N! x; 		/Command to start a specific instance
+startInst:{[instName] x:spawnCmd,string[instName],">& /dev/cmd.out &";0N! x; 		/Command to start a specific instance
 			system[x];
 		};
 getNxtInstances:{[numInst] numInst sublist availInst}			/Show us the next instance to start
@@ -58,7 +58,7 @@ stopMultInst:{[instHandles] instances:instMap?instHandles;		/get instance handle
 		};
 stopInst:{[instName] unregister[instMap[instName]];
 			if[instName<>currentInst;							/only stopping if running on other instance to GW proc
-				[x:stopCmd,string instName;0N! x; 				/running awscli command to stop
+				[x:stopCmd,string[instName],">& /dev/cmd.out &";0N! x; 				/running awscli command to stop
 				system[x]]];
 		};
 //end code for starting and stopping slaves
