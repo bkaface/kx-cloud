@@ -31,7 +31,7 @@ init:{availInst:: `$"," vs getenv `slave_IDs; 		/per envvar specified specific t
 						(`avgQryExT;51));			/average query execution time
 	settings: default^ $[count .z.x;("J"$ .Q.opt .z.x)[;0];()!()];		/updating settings with cmd line args
 	system"l ",getenv[`scripts_dir],"cmds.q";
-	getCmds[`$getenv `platform;`.lb];					/get the appropriate commands for start stop instances
+	(`.[`getCmds])[`$getenv `platform;`.lb];					/get the appropriate commands for start stop instances
 	currentInst::parseInst getInstCmd;				/get the currentinstance name
 	@[`.lb;key[settings];:;value[settings]]; 		/set values in namespace from parameters
 	/start dynamic loadbalancing if required
