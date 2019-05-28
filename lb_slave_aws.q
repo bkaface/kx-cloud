@@ -5,7 +5,7 @@
 
 \d .lb
 
-system"l ",getenv[`scripts_dir],"cmds.q"
+system"l ",getenv[`scripts_dir],"cmds.q";
 (`.[`getCmds])[`$getenv `platform;`.lb];					/get the appropriate commands for start stop instances
 instanceName:parseInst getInstCmd;				/get the currentinstance name
 	
