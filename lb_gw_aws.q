@@ -48,7 +48,7 @@ startMultInst:{[numInst] instances:getNxtInstances[numInst];	/Command to start a
 			startInst each instances;
 		};
 		/,getenv[`scripts_dir],"logs/cmd.out &"
-startInst:{[instName] x:spawnCmd,string[instName]," 2>&1 &";0N! x; 		/Command to start a specific instance
+startInst:{[instName] x:spawnCmd,string[instName],">",getenv[`scripts_dir],"logs/cmd.out 2>&1 &";0N! x; 		/Command to start a specific instance
 			system[x];
 		};
 getNxtInstances:{[numInst] numInst sublist availInst}			/Show us the next instance to start
