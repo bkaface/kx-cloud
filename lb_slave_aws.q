@@ -6,7 +6,7 @@
 \d .lb
 
 system"l ",getenv[`scripts_dir],"cmds.q";
-(`.[`getCmds])[`$getenv `platform;`.lb];					/get the appropriate commands for start stop instances
+getCmds[`$getenv `platform;`.lb];					/get the appropriate commands for start stop instances
 instanceName:parseInst getInstCmd;				/get the currentinstance name
 	
 /instanceName: raze system "ec2metadata --instance-id"; 							/whatever command I need to run to get the instance name on the env
