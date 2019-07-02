@@ -1,6 +1,6 @@
 # kx-cloud
 
-Example of Auto-Scaling code for Cloud installations using kdb+.
+Basic example of Auto-Scaling code for Cloud installations using kdb+.
 
 ## Requirements
 
