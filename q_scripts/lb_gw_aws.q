@@ -130,8 +130,11 @@ assessSlaves:{system "s ",string neg count track;}			/updating slave threads bas
 /startMultInst[bInsts]
 \d .
 
-//for aws demo - loading mounts 
+//for distributed hdb case - loading mount dir
 /system"l /hdb/db"
 
 //can also do some funny things with the xinted stuff too ... tbc
 //
+
+//to start process automatically uncomment below
+/.lb.init[]
